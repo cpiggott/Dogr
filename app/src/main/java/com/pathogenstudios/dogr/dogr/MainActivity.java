@@ -1,7 +1,10 @@
 package com.pathogenstudios.dogr.dogr;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -15,8 +18,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
 import com.parse.ParseUser;
+
+import java.util.List;
 
 
 public class MainActivity extends ActionBarActivity
@@ -32,6 +38,8 @@ public class MainActivity extends ActionBarActivity
      */
     private CharSequence mTitle;
 
+    private ParseUser currentUser;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,8 +54,20 @@ public class MainActivity extends ActionBarActivity
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
-
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();  // Always call the superclass method first
+        saveLocation();
+    }
+
+    @Override
+    protected void onStart(){
+        super.onStart();
+        saveLocation();
+    }
+
 
     @Override
     public void onNavigationDrawerItemSelected(int position) {
@@ -110,7 +130,7 @@ public class MainActivity extends ActionBarActivity
     }
 
     private void logoutCurrentUser() {
-        ParseUser currentUser = ParseUser.getCurrentUser();
+        currentUser = ParseUser.getCurrentUser();
         Intent intent = new Intent(this, LoginActivity.class);
         if (currentUser != null) {
             currentUser.logOut();
@@ -120,6 +140,49 @@ public class MainActivity extends ActionBarActivity
         startActivity(intent);
         finish();
     }
+
+    //Obtains the current location from the phone
+    private Location obtainLocation(Boolean showToast) {
+
+        LocationManager mLocationManager = (LocationManager)getApplicationContext().getSystemService(LOCATION_SERVICE);
+        List<String> providers = mLocationManager.getProviders(true);
+        Location bestLocation = null;
+        for (String provider : providers) {
+            Location l = mLocationManager.getLastKnownLocation(provider);
+            if (l == null) {
+                continue;
+            }
+            if (bestLocation == null || l.getAccuracy() < bestLocation.getAccuracy()) {
+                // Found best last known location: %s", l);
+                bestLocation = l;
+            }
+        }
+
+
+
+        if (showToast)
+            sendToast("Location is " + bestLocation.getLatitude() + ", "
+                    + bestLocation.getLongitude() + ".");
+        return bestLocation;
+    }
+
+    private void sendToast(String message) {
+        CharSequence text = (CharSequence) message;
+        Toast toast = Toast.makeText(this, text, Toast.LENGTH_LONG);
+        toast.show();
+    }
+
+    //Saves the location of the current user to Parse.
+    private void saveLocation(){
+        currentUser = ParseUser.getCurrentUser();
+        Location currentLocation = obtainLocation(false);
+        ParseGeoPoint parseLocation = new ParseGeoPoint(currentLocation.getLatitude(), currentLocation.getLongitude());
+        currentUser.put("lastKnownLocation", parseLocation);
+        currentUser.saveInBackground();
+    }
+
+
+
 
     /**
      * A placeholder fragment containing a simple view.
