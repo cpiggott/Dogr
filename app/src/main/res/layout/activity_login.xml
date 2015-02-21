@@ -47,6 +47,7 @@
 
     <Button
         android:layout_width="wrap_content"
+        android:enabled="false"
         android:layout_height="wrap_content"
         android:text="Register"
         android:id="@+id/registerButton"
@@ -68,6 +69,5 @@
         android:layout_below="@+id/registerButton"
         android:layout_alignRight="@+id/registerButton"
         android:layout_alignEnd="@+id/registerButton"
-        android:clickable="true"
         android:onClick="forgotPassword"/>
 </RelativeLayout>
