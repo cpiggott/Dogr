@@ -1,24 +1,22 @@
 package com.pathogenstudios.dogr.dogr;
 
 import android.app.Activity;
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.ActionBar;
+import android.content.Intent;
+import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.content.Context;
-import android.os.Build;
-import android.os.Bundle;
-import android.view.Gravity;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarActivity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.support.v4.widget.DrawerLayout;
-import android.widget.ArrayAdapter;
-import android.widget.TextView;
+import android.widget.Toast;
 
-import com.parse.Parse;
+import com.parse.ParseObject;
+import com.parse.ParseUser;
 
 
 public class MainActivity extends ActionBarActivity
@@ -105,9 +103,22 @@ public class MainActivity extends ActionBarActivity
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
+        } else if(id == R.id.action_logout) {
+            logoutCurrentUser();
         }
-
         return super.onOptionsItemSelected(item);
+    }
+
+    private void logoutCurrentUser() {
+        ParseUser currentUser = ParseUser.getCurrentUser();
+        Intent intent = new Intent(this, LoginActivity.class);
+        if (currentUser != null) {
+            currentUser.logOut();
+            ParseObject.unpinAllInBackground();
+            Toast.makeText(this, "User " + currentUser.getUsername() + " logged out", Toast.LENGTH_LONG).show();
+        }
+        startActivity(intent);
+        finish();
     }
 
     /**
