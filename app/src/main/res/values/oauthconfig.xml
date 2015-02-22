@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="fitBarkOAuthAppId">__INSERT_APP_ID__</string>
-    <string name="fitBarkOAuthSecret">__INSERT_APP_SECRET__</string>
-    <string name="fitBarkOAuthCallbackUrl">__INSERT_CALLBACK_URL__</string>
+    <string name="fitBarkOAuthAppId">26dd4dd2c221dabfa3656cfa40ef0d703708aa656583cf79d8825c2a8cb30006</string>
+    <string name="fitBarkOAuthSecret">d63e2bc8ff399af838e0758ee6dea150876f8e685428d24253a5d7bd9b05e4eb</string>
+    <string name="fitBarkOAuthCallbackUrl">urn:ietf:wg:oauth:2.0:oob</string>
 </resources>

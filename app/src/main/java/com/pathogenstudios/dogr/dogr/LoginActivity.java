@@ -15,6 +15,7 @@ import android.view.View;
 import android.webkit.CookieManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -79,6 +80,9 @@ public class LoginActivity extends Activity {
         //    startActivity(mainIntent);
         //    finish();
         //}
+
+        ImageView daLogo = (ImageView) this.findViewById(R.id.daLogo);
+        daLogo.setImageDrawable(getResources().getDrawable(R.drawable.logo));
     }
 
     //-------------------------------------

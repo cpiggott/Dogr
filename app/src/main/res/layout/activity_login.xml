@@ -31,4 +31,11 @@
         android:layout_alignEnd="@+id/loginButton"
         android:onClick="registerUser"/>
 
+    <ImageView
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:id="@+id/daLogo"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true"/>
+
 </RelativeLayout>
