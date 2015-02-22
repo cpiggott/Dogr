@@ -20,6 +20,9 @@ import android.widget.Toast;
 
 import com.parse.LogInCallback;
 import com.parse.ParseException;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
+import com.parse.ParseRelation;
 import com.parse.ParseUser;
 import com.parse.RequestPasswordResetCallback;
 import com.parse.SignUpCallback;
@@ -30,7 +33,10 @@ import com.pathogenstudios.fitbark.FitBarkOAuthConfig;
 import com.pathogenstudios.fitbark.FitBarkSession;
 import com.pathogenstudios.fitbark.User;
 
+import org.json.JSONObject;
+
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -109,7 +115,7 @@ public class LoginActivity extends Activity {
             }
 
             if (ret != null) {
-                doLoginFinished(ret);
+                doLoginFinished(ret, null);
             }
 
             return ret;
@@ -134,7 +140,7 @@ public class LoginActivity extends Activity {
             }
 
             if (ret != null) {
-                doLoginFinished(ret);
+                doLoginFinished(ret, user);
             }
 
             return ret;
@@ -170,9 +176,61 @@ public class LoginActivity extends Activity {
         });
     }
 
-    private void doLoginFinished(FitBarkSession session) {
+    private void doLoginFinished(FitBarkSession session, User fitBarkUser) {
         // Save their access token
         preferences.edit().putString(cachedAccessTokenKey, session.getAccessToken()).apply();
+
+        // Login to Parse
+        if (fitBarkUser == null) {
+            fitBarkUser = session.getUserInfo();
+        }
+
+        //TODO: Yeah, this is not secure at all.
+        ParseUser parseUser = null;
+        try {
+            parseUser = ParseUser.logIn("user" + fitBarkUser.getId(), "mega_security" + fitBarkUser.getId());
+        } catch (ParseException ex) {
+            // Ignore since this exception can happen on login failure.
+        }
+
+        final String firstNameKey = "firstName";
+        final String lastNameKey = "lastName";
+        final String userBioKey = "userBio";
+
+        // Register the user with Parse if they don't exist yet
+        if (parseUser == null) {
+            parseUser = new ParseUser();
+            parseUser.setUsername("user" + fitBarkUser.getId());
+            parseUser.setPassword("mega_security" + fitBarkUser.getId());
+
+            parseUser.setEmail(fitBarkUser.getUsername());
+            parseUser.put(firstNameKey, fitBarkUser.getFirstName());
+            parseUser.put(lastNameKey, fitBarkUser.getLastName());
+            parseUser.put(userBioKey, "New to Dogr!");
+            try {
+                parseUser.signUp();
+            } catch (ParseException ex) {
+                throw new FitBarkApiException("Couldn't log in.", ex);
+            }
+        }
+
+        // Sync basic profile info:
+        parseUser.setEmail(fitBarkUser.getUsername());
+        parseUser.put(firstNameKey, fitBarkUser.getFirstName());
+        parseUser.put(lastNameKey, fitBarkUser.getLastName());
+
+        // Sync dogs:
+        ArrayList<Dog> fitBarkDogs = session.getDogs();
+        for (Dog fitBarkDog : fitBarkDogs) {
+            parseUser.getRelation("dogs").add(SyncDog(fitBarkDog, parseUser));
+        }
+
+        // Save any changes made to the user:
+        try {
+            parseUser.save();
+        } catch (ParseException ex) {
+            throw new FitBarkApiException("Couldn't sync basic user info.", ex);
+        }
 
         // Move to the main activity
         hideProgressDialog();
@@ -180,66 +238,64 @@ public class LoginActivity extends Activity {
         finish();
     }
 
+    private ParseObject SyncDog(Dog fitBarkDog, ParseUser owner) {
+        final String dogClassName = "Dog";
+
+        final String fitBarkIdKey = "fitBarkId";
+
+        ParseQuery<ParseObject> query = ParseQuery.getQuery(dogClassName);
+        query.whereEqualTo(fitBarkIdKey, fitBarkDog.getId());
+        query.setLimit(1);
+
+        ParseObject result = null;
+        try {
+            result = query.getFirst();
+        } catch (ParseException ex) {
+            // Ignore this since it might just mean that there was not dog.
+        }
+
+        // Create a new dog if it is a new one
+        if (result == null) {
+            result = new ParseObject(dogClassName);
+            result.put(fitBarkIdKey, fitBarkDog.getId());
+        }
+
+        // Sync or set data:
+        String breed1 = fitBarkDog.getBreed1();
+        String breed2 = fitBarkDog.getBreed2();
+        if (breed1 != null) {
+            result.put("breed1", breed1);
+        } else {
+            result.put("breed1", JSONObject.NULL);
+        }
+        if (breed2 != null) {
+            result.put("breed2", breed2);
+        } else {
+            result.put("breed2", JSONObject.NULL);
+        }
+        result.put("dailyGoal", Integer.toString(fitBarkDog.getDailyGoal()));
+        result.put("gender", fitBarkDog.getGenderString());
+        result.put("name", fitBarkDog.getName());
+        result.put("neutered", Boolean.toString(fitBarkDog.getIsNutered()));
+        result.put("owner", owner);
+        result.put("weight", Integer.toString(fitBarkDog.getWeight()));
+        result.put("weightUnit", fitBarkDog.getWeightUnits());
+
+        try {
+            result.save();
+        } catch (ParseException ex) {
+            throw new FitBarkApiException("Couldn't sync FitBark dog data.", ex);
+        }
+
+        return result;
+    }
+
     public void onLoginButtonPressed(View v) {
         // For testing only, clear all cookies:
-        CookieManager.getInstance().removeAllCookie();
+        //CookieManager.getInstance().removeAllCookie();
 
         webView = new FitBarkLoginWebViewClientImpl();
         webView.setVisibility(View.VISIBLE);
         setContentView(webView);
-    }
-
-    class LoginTask extends AsyncTask<Void, Void, Void> {
-        ProgressDialog progress;
-        Boolean mLoginFailed;
-
-        public LoginTask() {
-            progress = new ProgressDialog(LoginActivity.this);
-        }
-
-        protected void onPreExecute() {
-            super.onPreExecute();
-            progress.setCancelable(true);
-            progress.setMessage("Attempting Log In");
-            progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-            progress.show();
-        }
-
-        protected Void doInBackground(Void... params) {
-            mLoginFailed = false;
-            /*ParseUser.logInInBackground(mEmailAccount, mPassword, new LogInCallback() {
-                public void done(ParseUser user, ParseException e) {
-                    if (user != null) {
-                        Log.i("PAYBACK", "Logged user " + mEmailAccount + " in successfully.");
-                    } else {
-                        Toast.makeText(LoginActivity.this, "Login Failed. Please try again, or use forgot password if necessary", Toast.LENGTH_LONG).show();
-                        mLoginFailed = true;
-                    }
-                }
-            });
-            ParseUser currentUser = null;
-            while( currentUser == null && mLoginFailed == false ) {
-                try {
-                    Thread.sleep(2000);
-                } catch (InterruptedException e) {
-                }
-                currentUser = ParseUser.getCurrentUser();
-            }*/
-
-            return null;
-        }
-
-        protected void onPostExecute(Void results) {
-            super.onPostExecute(results);
-            /*if( mLoginFailed == false ) {
-                Intent mainIntent = new Intent(mActivity.getApplicationContext(), MainActivity.class);
-                Log.d("PAYBACK", "In com.hgkdev.haydenkinney.payback.Login_User PostExecute");
-                progress.dismiss();
-                mActivity.startActivity(mainIntent);
-                mActivity.finish();
-            } else*/ {
-                progress.dismiss();
-            }
-        }
     }
 }
