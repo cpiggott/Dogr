@@ -13,13 +13,13 @@ import com.andtinder.model.Orientations;
 import com.andtinder.view.CardContainer;
 import com.andtinder.view.SimpleCardStackAdapter;
 import com.parse.FindCallback;
-import com.parse.Parse;
 import com.parse.ParseException;
-import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
+import com.parse.ParseRelation;
 import com.parse.ParseUser;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -29,6 +29,9 @@ public class MainFragment extends Fragment {
 
     private static final String ARG_SECTION_NUMBER = "section_number";
     CardContainer mCardContainer;
+    View rootView;
+    List<CardData> cardData = new ArrayList<CardData>();
+    List<DogCardData> dogData = new ArrayList<DogCardData>();
     /**
      * Returns a new instance of this fragment for the given section
      * number.
@@ -47,7 +50,61 @@ public class MainFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+        rootView = inflater.inflate(R.layout.fragment_main, container, false);
+        RetrieveData();
+        return rootView;
+    }
+
+    @Override
+    public void onStart(){
+        super.onStart();
+
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        ((MainActivity) activity).onSectionAttached(
+                getArguments().getInt(ARG_SECTION_NUMBER));
+    }
+
+
+
+    //WHAT THE DUCKers DOES THIS THING DO...
+    private void RetrieveData(){
+        ParseQuery<ParseUser> query = ParseUser.getQuery();
+        query.whereNotEqualTo("username", ParseUser.getCurrentUser().get("username"));
+        //query.whereEqualTo("objectId", "YJCYviNtZx");
+        query.setLimit(25);
+        query.findInBackground(new FindCallback<ParseUser>() {
+            public void done(List<ParseUser> parseData, ParseException e) {
+                if (e == null) {
+                    List<ParseUser> data = parseData;
+                    for(ParseUser tempUser : data){//For every user returned
+
+                        ParseRelation relation = tempUser.getRelation("dogs");
+                        ParseQuery innerQuery = relation.getQuery();
+                        List<ParseObject> innerList = new ArrayList<ParseObject>();
+                        try {innerList = innerQuery.find();}
+                        catch (ParseException ef) {
+                        }
+
+                        for (ParseObject dog : innerList) {
+                            dogData.add(new DogCardData(dog.getObjectId().toString(), dog.getString("name"), dog.getString("breed1").toString(), dog.getString("dailyGoal").toString(), dog.getString("gender").toString(), dog.getString("neutered").toString(), dog.getString("weight").toString(), dog.getString("weightUnit").toString()));
+                        }
+                        cardData.add(new CardData(tempUser.getObjectId().toString(), tempUser.getString("username"), tempUser.getString("userBio"), Integer.toString(dogData.size()), dogData ));
+                        dogData = new ArrayList<DogCardData>();
+                    }
+
+                } else {
+                    Log.d("score", "Error: " + e.getMessage());
+                }
+            }
+        });
+
+    }
+
+    public void SwiperNoSwiping(){
 
         mCardContainer = (CardContainer) rootView.findViewById(R.id.cardView);
         mCardContainer.setOrientation(Orientations.Orientation.Ordered);
@@ -77,39 +134,6 @@ public class MainFragment extends Fragment {
         SimpleCardStackAdapter adapter = new SimpleCardStackAdapter(getActivity());
         adapter.add(card);
         mCardContainer.setAdapter(adapter);
-
-
-
-
-        return rootView;
-    }
-
-    @Override
-    public void onStart(){
-        super.onStart();
-
-    }
-
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        ((MainActivity) activity).onSectionAttached(
-                getArguments().getInt(ARG_SECTION_NUMBER));
-    }
-
-    private void RetrieveData(){
-        ParseQuery<ParseObject> query = ParseQuery.getQuery("User");
-        query.setLimit(25);
-        query.findInBackground(new FindCallback<ParseObject>() {
-            public void done(List<ParseObject> parseData, ParseException e) {
-                if (e == null) {
-                    List<ParseObject> data = parseData;
-                    String h = ":h";
-                } else {
-                    Log.d("score", "Error: " + e.getMessage());
-                }
-            }
-        });
 
     }
 
