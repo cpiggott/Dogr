@@ -1,21 +1,15 @@
 package com.pathogenstudios.dogr.dogr;
 
-import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.parse.ParseGeoPoint;
@@ -73,9 +67,21 @@ public class MainActivity extends ActionBarActivity
     public void onNavigationDrawerItemSelected(int position) {
         // update the main content by replacing fragments
         FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction()
-                .replace(R.id.container, MainFragment.newInstance(position + 1))
-                .commit();
+        if (position == 3) {
+            fragmentManager
+                    .beginTransaction()
+                    .replace(R.id.container,
+                            UpdateUserFragment.newInstance(position + 1)).commit();
+        } else if (position == 4) {
+                fragmentManager
+                        .beginTransaction()
+                        .replace(R.id.container,
+                                MatchesFragment.newInstance(position + 1)).commit();
+        } else {
+            fragmentManager.beginTransaction()
+                    .replace(R.id.container, MainFragment.newInstance(position + 1))
+                    .commit();
+        }
     }
 
     public void onSectionAttached(int number) {
@@ -88,6 +94,9 @@ public class MainActivity extends ActionBarActivity
                 break;
             case 3:
                 mTitle = getString(R.string.title_section3);
+                break;
+            case 4:
+                mTitle = "Update User";
                 break;
         }
     }
