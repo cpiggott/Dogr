@@ -72,6 +72,11 @@ public class MainActivity extends ActionBarActivity
                     .beginTransaction()
                     .replace(R.id.container,
                             UpdateUserFragment.newInstance(position + 1)).commit();
+        } else if (position == 4) {
+                fragmentManager
+                        .beginTransaction()
+                        .replace(R.id.container,
+                                MatchesFragment.newInstance(position + 1)).commit();
         } else {
             fragmentManager.beginTransaction()
                     .replace(R.id.container, MainFragment.newInstance(position + 1))
