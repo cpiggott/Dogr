@@ -26,6 +26,7 @@ public class CardModel {
 
 	private String   title;
 	private String   description;
+    private CardData cardData;
 	private Drawable cardImageDrawable;
 	private Drawable cardLikeImageDrawable;
 	private Drawable cardDislikeImageDrawable;
@@ -44,20 +45,23 @@ public class CardModel {
     }
 
 	public CardModel() {
-		this(null, null, (Drawable)null);
+		this(null, null, (Drawable)null, null);
 	}
 
-	public CardModel(String title, String description, Drawable cardImage) {
-		this.title = title;
-		this.description = description;
-		this.cardImageDrawable = cardImage;
-	}
+	public CardModel(String title, String description, Drawable cardImage, CardData cardData) {
+        this.title = title;
+        this.description = description;
+        this.cardImageDrawable = cardImage;
+        this.cardData = cardData;
+    }
 
-	public CardModel(String title, String description, Bitmap cardImage) {
-		this.title = title;
-		this.description = description;
-		this.cardImageDrawable = new BitmapDrawable(null, cardImage);
-	}
+
+
+
+
+    public CardData getCardData() { return cardData; }
+
+    public void setCardData(CardData cardData){ this.cardData = cardData; }
 
 	public String getTitle() {
 		return title;
