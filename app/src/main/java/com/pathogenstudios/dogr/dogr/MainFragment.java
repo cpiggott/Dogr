@@ -8,12 +8,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.andtinder.model.CardData;
 import com.andtinder.model.CardModel;
+import com.andtinder.model.DogCardData;
 import com.andtinder.model.Orientations;
 import com.andtinder.view.CardContainer;
 import com.andtinder.view.SimpleCardStackAdapter;
-import com.andtinder.model.CardData;
-import com.andtinder.model.DogCardData;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
@@ -34,6 +34,7 @@ public class MainFragment extends Fragment {
     View rootView;
     List<CardData> cardData = new ArrayList<CardData>();
     List<DogCardData> dogData = new ArrayList<DogCardData>();
+    ParseUser targetUser;
     /**
      * Returns a new instance of this fragment for the given section
      * number.
@@ -119,10 +120,88 @@ public class MainFragment extends Fragment {
             card.setOnCardDimissedListener(new CardModel.OnCardDimissedListener(){
                 @Override
                 public void onLike(){
-                    Log.i("Swipeable Cards","I like the card " + card.getTitle());
+                    Log.i("Swipeable Cards","I dislike the card " + card.getTitle());
+                    final ParseUser currentUser = ParseUser.getCurrentUser();
+                    final String targetUserId = card.getCardData().UserObjId;
+                    ParseQuery<ParseUser> q = ParseUser.getQuery();
+                    q.whereEqualTo("objectId", targetUserId);
+                    targetUser = ParseUser.createWithoutData(ParseUser.class, targetUserId);
+//                    try{
+//                         targetUser = q.find().get(0);
+//                    } catch(Exception e) {
+//                        Log.d("SHIT","SHIT");
+//                    }
+                    ParseQuery<ParseObject> query = ParseQuery.getQuery("Swipe");
+                    query.whereEqualTo("userTwo", currentUser);
+                    query.findInBackground(new FindCallback<ParseObject>() {
+                        @Override
+                        public void done(List<ParseObject> parseObjects, ParseException e) {
+                            if(e == null) {
+                                if(parseObjects.size() == 0) {
+                                    ParseObject swipe = new ParseObject("Swipe");
+                                    swipe.put("userOne", currentUser);
+                                    swipe.put("userTwo", targetUser);
+                                    swipe.put("userOneSwipe", "n");
+                                    try {
+                                        swipe.save();
+                                    } catch( Exception ex ) {
+                                        Log.d("1THISISAN","EXCEPTION " + ex.toString());
+                                    }
+                                    Log.d("OUTOF","TRYCATCH");
+                                } else {
+                                    parseObjects.get(0).put("userTwoSwipe", "n");
+                                    try {
+                                        parseObjects.get(0).save();
+                                    } catch( Exception ex ) {
+                                        Log.d("2THISISAN","EXCEPTION " + ex.toString());
+                                    }
+                                    Log.d("OUTOF","TRYCATCH");
+                                }
+                            } else {
+                                Log.d("SHITFUCK", "SOMETHINGDIDGOBADUPHERE" + e.toString());
+                            }
+                        }
+                    });
                 }
                 public void onDislike(){
-                    Log.i("Swipeable Cards","I dislike the card" + card.getTitle());
+                    Log.i("Swipeable Cards","I like the card" + card.getTitle());
+                    final ParseUser currentUser = ParseUser.getCurrentUser();
+                    final String targetUserId = card.getCardData().UserObjId;
+                    ParseQuery<ParseUser> q = ParseUser.getQuery();
+                    q.whereEqualTo("objectId", targetUserId);
+                    targetUser = ParseUser.createWithoutData(ParseUser.class, targetUserId);
+
+                    ParseQuery<ParseObject> query = ParseQuery.getQuery("Swipe");
+                    query.whereEqualTo("userTwo", currentUser);
+                    query.findInBackground(new FindCallback<ParseObject>() {
+                        @Override
+                        public void done(List<ParseObject> parseObjects, ParseException e) {
+                            if(e == null) {
+                                if(parseObjects.size() == 0) {
+                                    ParseObject swipe = new ParseObject("Swipe");
+                                    swipe.put("userOne", currentUser);
+                                    swipe.put("userTwo", targetUser);
+                                    swipe.put("userOneSwipe", "y");
+                                    try {
+                                        swipe.save();
+                                    } catch( Exception ex ) {
+                                        Log.d("3THISISAN","EXCEPTION " + ex.toString());
+                                    }
+                                    Log.d("OUTOF","TRYCATCH");
+                                } else {
+                                    parseObjects.get(0).put("userTwoSwipe", "y");
+                                    try {
+                                        parseObjects.get(0).save();
+                                    } catch( Exception ex ) {
+                                        Log.d("4THISISAN","EXCEPTION " + ex.toString());
+                                    }
+                                    Log.d("OUTOF","TRYCATCH");
+                                }
+                            } else {
+                                Log.d("SHITFUCK", "SOMETHINGDIDGOBADDOWNTHERE" + e.toString());
+                            }
+                        }
+                    });
                 }
             });
 
