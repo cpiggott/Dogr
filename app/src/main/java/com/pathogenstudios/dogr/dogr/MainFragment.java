@@ -1,6 +1,8 @@
 package com.pathogenstudios.dogr.dogr;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -104,7 +106,7 @@ public class MainFragment extends Fragment {
                                     dog.getString("weight").toString(),
                                     dog.getString("weightUnit").toString()));
                         }
-                        cardData.add(new CardData(tempUser.getObjectId().toString(), tempUser.getString("username"), tempUser.getString("userBio"), Integer.toString(dogData.size()), dogData ));
+                        cardData.add(new CardData(tempUser.getObjectId().toString(), tempUser.getString("username"), tempUser.getString("userBio"), Integer.toString(dogData.size()), dogData, tempUser.getString("adUrl") ));
                         dogData = new ArrayList<DogCardData>();
 
                         SwiperNoSwiping();
@@ -213,6 +215,10 @@ public class MainFragment extends Fragment {
                             }
                         }
                     });
+
+                    if (card.getCardData().AdUrl != null) {
+                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(card.getCardData().AdUrl)));
+                    }
                 }
             });
 

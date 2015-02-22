@@ -422,6 +422,8 @@ public class CardContainer extends AdapterView<ListAdapter> {
         }
     }
 
+    private int numCardsSwiped = 0;
+
     private class GestureListener extends SimpleOnGestureListener {
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
@@ -446,7 +448,9 @@ public class CardContainer extends AdapterView<ListAdapter> {
                 duration = Math.min(500, duration);
 
                 mTopCard = getChildAt(getChildCount() - 2);
-                CardModel cardModel = (CardModel)getAdapter().getItem(getChildCount() - 1);
+                CardModel cardModel = (CardModel)getAdapter().getItem(numCardsSwiped);
+                //Log.i("WOO", "Num cards in adapter: " + getAdapter().getCount());
+                numCardsSwiped++;
 
                 if(mTopCard != null)
                     mTopCard.setLayerType(LAYER_TYPE_HARDWARE, null);

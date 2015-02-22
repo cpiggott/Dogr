@@ -25,7 +25,6 @@ public class DogCardData {
         this.Neutered = neutered;
         this.Weight = weight;
         this.WeightUnit = weightUnit;
-
     }
 
 }
