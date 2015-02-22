@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fitBarkOAuthAppId">__INSERT_APP_ID__</string>
+    <string name="fitBarkOAuthSecret">__INSERT_APP_SECRET__</string>
+    <string name="fitBarkOAuthCallbackUrl">__INSERT_CALLBACK_URL__</string>
+</resources>
