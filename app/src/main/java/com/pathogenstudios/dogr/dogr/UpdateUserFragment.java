@@ -84,13 +84,17 @@ public class UpdateUserFragment extends Fragment {
         cropPhoto.setEnabled(false);
         final ParseUser currentUser = ParseUser.getCurrentUser();
         ParseFile profilePic  = (ParseFile) currentUser.get("userProfileImage");
-        profilePic.getDataInBackground(new GetDataCallback() {
-            @Override
-            public void done(byte[] bytes, ParseException e) {
-                loadImageFromParse(bytes, userImage);
+        try {
+            profilePic.getDataInBackground(new GetDataCallback() {
+                @Override
+                public void done(byte[] bytes, ParseException e) {
+                    loadImageFromParse(bytes, userImage);
 
-            }
-        });
+                }
+            });
+        } catch (Exception e) {
+
+        }
 
         String userBioText = (String)currentUser.get("userBio");
         userBio.setText(userBioText);
