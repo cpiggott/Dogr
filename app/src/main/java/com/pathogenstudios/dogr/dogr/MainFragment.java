@@ -4,7 +4,9 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -92,7 +94,14 @@ public class MainFragment extends Fragment {
                         }
 
                         for (ParseObject dog : innerList) {
-                            dogData.add(new DogCardData(dog.getObjectId().toString(), dog.getString("name"), dog.getString("breed1").toString(), dog.getString("dailyGoal").toString(), dog.getString("gender").toString(), dog.getString("neutered").toString(), dog.getString("weight").toString(), dog.getString("weightUnit").toString()));
+                            dogData.add(new DogCardData(dog.getObjectId().toString(),
+                                    dog.getString("name"),
+                                    dog.getString("breed1").toString(),
+                                    dog.getString("dailyGoal").toString(),
+                                    dog.getString("gender").toString(),
+                                    dog.getString("neutered").toString(),
+                                    dog.getString("weight").toString(),
+                                    dog.getString("weightUnit").toString()));
                         }
                         cardData.add(new CardData(tempUser.getObjectId().toString(), tempUser.getString("username"), tempUser.getString("userBio"), Integer.toString(dogData.size()), dogData ));
                         dogData = new ArrayList<DogCardData>();
@@ -107,6 +116,8 @@ public class MainFragment extends Fragment {
         });
 
     }
+
+    boolean clicked = false;
 
     public void SwiperNoSwiping(){
 
@@ -132,6 +143,14 @@ public class MainFragment extends Fragment {
                     Log.i("Swipeable Cards","I am pressing the card"  + card.getTitle());
                 }
             });
+
+            card.setButtonClick(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Log.i("Random","Please fucking work...");
+                }
+            });
+
 
             adapter.add(card);
 

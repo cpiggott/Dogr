@@ -21,6 +21,9 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.view.GestureDetector;
+import android.view.View;
+import android.widget.Button;
 
 public class CardModel {
 
@@ -34,6 +37,10 @@ public class CardModel {
     private OnCardDimissedListener mOnCardDimissedListener = null;
 
     private OnClickListener mOnClickListener = null;
+
+    private View.OnLongClickListener mOnLongClickListnener = null;
+
+    private View.OnClickListener bOnClickListener = null;
 
     public interface OnCardDimissedListener {
         void onLike();
@@ -119,4 +126,15 @@ public class CardModel {
     public OnClickListener getOnClickListener() {
         return this.mOnClickListener;
     }
+
+    public void setButtonClick( View.OnClickListener listner)
+    {
+        this.bOnClickListener = listner;
+    }
+
+    public Button.OnClickListener getOnButtonClick(){
+        return this.bOnClickListener;
+    }
+
+
 }

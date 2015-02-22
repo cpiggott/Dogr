@@ -4,6 +4,7 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -27,6 +28,8 @@ public final class SimpleCardStackAdapter extends CardStackAdapter {
 		((ImageView) convertView.findViewById(R.id.image)).setImageDrawable(model.getCardImageDrawable());
 		((TextView) convertView.findViewById(R.id.title)).setText(model.getTitle());
 		((TextView) convertView.findViewById(R.id.description)).setText(model.getDescription());
+        ((Button) convertView.findViewById(R.id.infoButton)).setOnClickListener(model.getOnButtonClick());
+
 
 		return convertView;
 	}
