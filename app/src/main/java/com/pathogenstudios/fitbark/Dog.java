@@ -20,9 +20,11 @@ public class Dog {
     private String breed2;
     private Gender gender;
     private int weight;
+    private String weightUnits;
     private String country;
     private String zipCode;
     private boolean isNutered;
+    private int dailyGoal;
 
     public Dog(JSONObject json) throws JSONException {
         id = json.getInt("id");
@@ -34,16 +36,18 @@ public class Dog {
 
         gender = Gender.Unknown;
         String genderString = json.optString("gender");
-        if (genderString == "M") {
+        if (genderString.equals("M")) {
             gender = Gender.Male;
-        } else if (genderString == "F") {
+        } else if (genderString.equals("F")) {
             gender = Gender.Female;
         }
 
         weight = json.optInt("weight");
+        weightUnits = json.optString("weight_unit");
         country = json.optString("country");
         zipCode = json.optString("zip");
         isNutered = json.optBoolean("neutered");
+        dailyGoal = json.optInt("daily_goal");
     }
 
     private String getBreedFromJson(JSONObject json, String key) throws JSONException {
@@ -63,9 +67,11 @@ public class Dog {
     public String getBreed2() { return breed2; }
     public Gender getGender() { return gender; }
     public int getWeight() { return weight; }
+    public String getWeightUnits() { return weightUnits; }
     public String getCountry() { return country; }
     public String getZipCode() { return zipCode; }
     public boolean getIsNutered() { return isNutered; }
+    public int getDailyGoal() { return dailyGoal; }
 
     public String getBreed() {
         if (breed1 == null && breed2 == null) {
@@ -76,6 +82,16 @@ public class Dog {
             return breed2;
         } else {
             return breed1 + " " + breed2;
+        }
+    }
+
+    public String getGenderString() {
+        if (gender == Gender.Male) {
+            return "M";
+        } else if (gender == Gender.Female) {
+            return "F";
+        } else {
+            return "?";
         }
     }
 }
