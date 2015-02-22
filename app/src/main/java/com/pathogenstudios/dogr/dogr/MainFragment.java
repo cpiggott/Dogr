@@ -106,7 +106,18 @@ public class MainFragment extends Fragment {
                                     dog.getString("weight").toString(),
                                     dog.getString("weightUnit").toString()));
                         }
-                        cardData.add(new CardData(tempUser.getObjectId().toString(), tempUser.getString("username"), tempUser.getString("userBio"), Integer.toString(dogData.size()), dogData, tempUser.getString("adUrl") ));
+
+                        String name = tempUser.getString("firstName");
+                        String lastName = tempUser.getString("lastName");
+                        if (lastName != null && lastName.length() < 1) {
+                            name += " " + lastName.charAt(0) + ".";
+                        }
+
+                        if (name == null || name.length() < 1) {
+                            name = tempUser.getString("username");
+                        }
+
+                        cardData.add(new CardData(tempUser.getObjectId().toString(), name, tempUser.getString("userBio"), Integer.toString(dogData.size()), dogData, tempUser.getString("adUrl") ));
                         dogData = new ArrayList<DogCardData>();
 
                         SwiperNoSwiping();
