@@ -12,6 +12,15 @@ import com.andtinder.model.CardModel;
 import com.andtinder.model.Orientations;
 import com.andtinder.view.CardContainer;
 import com.andtinder.view.SimpleCardStackAdapter;
+import com.parse.FindCallback;
+import com.parse.Parse;
+import com.parse.ParseException;
+import com.parse.ParseGeoPoint;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
+import com.parse.ParseUser;
+
+import java.util.List;
 
 /**
  * Created by Chris on 2/21/2015.
@@ -42,7 +51,7 @@ public class MainFragment extends Fragment {
 
         mCardContainer = (CardContainer) rootView.findViewById(R.id.cardView);
         mCardContainer.setOrientation(Orientations.Orientation.Ordered);
-
+        RetrieveData();
 
 
         CardModel card = new CardModel("Chris", "dddDayum", getResources().getDrawable(R.drawable.logo));
@@ -87,5 +96,22 @@ public class MainFragment extends Fragment {
         ((MainActivity) activity).onSectionAttached(
                 getArguments().getInt(ARG_SECTION_NUMBER));
     }
+
+    private void RetrieveData(){
+        ParseQuery<ParseObject> query = ParseQuery.getQuery("User");
+        query.setLimit(25);
+        query.findInBackground(new FindCallback<ParseObject>() {
+            public void done(List<ParseObject> parseData, ParseException e) {
+                if (e == null) {
+                    List<ParseObject> data = parseData;
+                    String h = ":h";
+                } else {
+                    Log.d("score", "Error: " + e.getMessage());
+                }
+            }
+        });
+
+    }
+
 }
 
