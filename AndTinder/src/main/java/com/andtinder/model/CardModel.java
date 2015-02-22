@@ -21,6 +21,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.View;
 import android.widget.Button;
@@ -56,6 +57,7 @@ public class CardModel {
 	}
 
 	public CardModel(String title, String description, Drawable cardImage, CardData cardData) {
+        Log.i("CardModel", "Making card " + title);
         this.title = title;
         this.description = description;
         this.cardImageDrawable = cardImage;
