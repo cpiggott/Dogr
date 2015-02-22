@@ -2,13 +2,17 @@ package com.pathogenstudios.dogr.dogr;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.CookieManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -19,297 +23,223 @@ import com.parse.ParseException;
 import com.parse.ParseUser;
 import com.parse.RequestPasswordResetCallback;
 import com.parse.SignUpCallback;
+import com.pathogenstudios.fitbark.Dog;
+import com.pathogenstudios.fitbark.FitBarkApiException;
+import com.pathogenstudios.fitbark.FitBarkLoginWebView;
+import com.pathogenstudios.fitbark.FitBarkOAuthConfig;
+import com.pathogenstudios.fitbark.FitBarkSession;
+import com.pathogenstudios.fitbark.User;
 
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
-
 public class LoginActivity extends Activity {
+    private static final String TAG = "LoginActivity";
 
-    private TextView forgotPassword;
-    private Button loginButton;
-    private Button registerButton;
-    private EditText emailEditText;
-    private EditText passwordEditText;
+    private SharedPreferences preferences;
+    private static final String cachedAccessTokenKey = "cachedFitBarkAccessToken";
+
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+        oAuthConfig = new FitBarkOAuthConfig(
+                getString(R.string.fitBarkOAuthAppId),
+                getString(R.string.fitBarkOAuthSecret),
+                getString(R.string.fitBarkOAuthCallbackUrl)
+        );
 
-        ParseUser currentUser = ParseUser.getCurrentUser();
-        if( currentUser != null ) {
-            Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
-            startActivity(mainIntent);
-            finish();
-        }
+        // Try to log in using an existing access token:
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        forgotPassword = (TextView) this.findViewById(R.id.forgotPasswordTextView);
-        registerButton = (Button) this.findViewById(R.id.registerButton);
-        loginButton = (Button) this.findViewById(R.id.loginButton);
-        emailEditText = (EditText) this.findViewById(R.id.emailEditText);
-        passwordEditText = (EditText) this.findViewById(R.id.passwordEditText);
-
-    }
-
-    public void registerUser(View v) {
-        if( checkTextValues() ) {
-            ParseUser user = new ParseUser();
-
-            user.setUsername(emailEditText.getText().toString());
-            user.setPassword(passwordEditText.getText().toString());
-            user.setEmail(emailEditText.getText().toString());
-
-            new Register_User( LoginActivity.this, user ).execute();
-        }
-
-    }
-
-    public void loginUser(View v) {
-        if( checkTextValues() ) {
-            new Login_User(LoginActivity.this, emailEditText.getText().toString(), passwordEditText.getText().toString() ).execute();
-        }
-    }
-
-    public void forgotPassword(View v) {
-        if( checkEmailValue() ) {
-            new Change_Password(LoginActivity.this, emailEditText.getText().toString() ).execute();
-        }
-    }
-
-
-    private boolean checkEmailValue() {
-        String emailAddress = emailEditText.getText().toString();
-
-        boolean emailEmpty = emailAddress.equals("");
-        if (!emailEmpty) {
-            Pattern emailPattern = Pattern.compile(".+@.+\\.[a-z]+");
-            Matcher emailMatcher = emailPattern.matcher(emailAddress);
-            boolean emailCorrect = emailMatcher.matches();
-
-            if (emailCorrect) {
-                return true;
-            }
-        }
-        Toast.makeText(LoginActivity.this, "Please enter your email in the email field, and try again.", Toast.LENGTH_LONG).show();
-        return false;
-    }
-
-
-    private boolean checkTextValues() {
-        String emailAddress = emailEditText.getText().toString();
-
-        boolean emailEmpty = emailAddress.equals("");
-        boolean passwordEmpty = passwordEditText.getText().toString().equals("");
-
-        if( !emailEmpty ) {
-            if( !passwordEmpty ) {
-                Pattern emailPattern = Pattern.compile(".+@.+\\.[a-z]+");
-                Matcher emailMatcher = emailPattern.matcher(emailAddress);
-                boolean emailCorrect = emailMatcher.matches();
-
-                if( emailCorrect ) { return true; }
-                else {
-                    Toast.makeText(LoginActivity.this, "Please enter a valid email address", Toast.LENGTH_LONG ).show();
-                    return false;
-                }
-            } else {
-                Toast.makeText(LoginActivity.this, "Please fill all fields", Toast.LENGTH_LONG ).show();
-                return false;
-            }
-        } else {
-            Toast.makeText(LoginActivity.this, "Please fill all fields", Toast.LENGTH_LONG ).show();
-            return false;
-        }
-
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_login, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-}
-
-class Change_Password extends AsyncTask<Void, Void, Void> {
-
-    Activity mActivity;
-    String   mEmailAccount;
-    ProgressDialog progress;
-
-    public Change_Password( Activity activity, String emailAccount ) {
-        mActivity = activity;
-        mEmailAccount = emailAccount;
-        progress = new ProgressDialog( mActivity );
-    }
-
-    protected void onPreExecute() {
-        super.onPreExecute();
-        progress.setCancelable(true);
-        progress.setMessage("Sending Reset Email");
-        progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        progress.show();
-    }
-
-    @Override
-    protected Void doInBackground(Void... params) {
-        ParseUser.requestPasswordResetInBackground(mEmailAccount,
-                new RequestPasswordResetCallback() {
-                    @Override
-                    public void done(ParseException e) {
-                        if (e == null) {
-                            Log.i("PAYBACK", "Sent forgot password reset email to " + mEmailAccount );
-                        } else {
-                            Toast.makeText(mActivity, "Email address does not exist, please try again or register.", Toast.LENGTH_LONG).show();
-                        }
-                    }
-                });
+        String cachedAccessToken = null;
         try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
+            cachedAccessToken = preferences.getString(cachedAccessTokenKey, null);
+        } catch (ClassCastException ex) {
         }
 
-        return null;
-    }
-    protected void onPostExecute(Void results) {
-        super.onPostExecute(results);
-        progress.dismiss();
-    }
-}
+        if (cachedAccessToken != null) {
+            showProgressDialog("Logging into FitBark...");
+            new ResumeFitBarkSessionTask().execute(cachedAccessToken);
+        }
 
-class Login_User extends AsyncTask<Void, Void, Void> {
-    Activity mActivity;
-    String mEmailAccount, mPassword;
-    ProgressDialog progress;
-    Boolean mLoginFailed;
-
-    public Login_User( Activity activity, String emailAccount, String password ) {
-        mActivity = activity;
-        mEmailAccount = emailAccount;
-        mPassword = password;
-        progress = new ProgressDialog( mActivity );
-
+        //ParseUser currentUser = ParseUser.getCurrentUser();
+        //if (currentUser != null) {
+        //    Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
+        //    startActivity(mainIntent);
+        //    finish();
+        //}
     }
 
-    protected void onPreExecute() {
-        super.onPreExecute();
-        progress.setCancelable(true);
-        progress.setMessage("Attempting Log In");
-        progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        progress.show();
+    //-------------------------------------
+    // FitBark Login Stuff
+    //-------------------------------------
+    private FitBarkOAuthConfig oAuthConfig;
+
+    private class FitBarkLoginWebViewClientImpl extends FitBarkLoginWebView {
+        public FitBarkLoginWebViewClientImpl() {
+            super(LoginActivity.this, oAuthConfig);
+        }
+
+        @Override
+        public void onLoginSuccessful(String authorizationToken) {
+            setVisibility(View.INVISIBLE);
+            new FinishLoginTask().execute(authorizationToken);
+        }
     }
 
-    protected Void doInBackground(Void... params) {
-        mLoginFailed = false;
-        ParseUser.logInInBackground(mEmailAccount, mPassword, new LogInCallback() {
-            public void done(ParseUser user, ParseException e) {
-                if (user != null) {
-                    Log.i("PAYBACK", "Logged user " + mEmailAccount + " in successfully.");
-                } else {
-                    Toast.makeText(mActivity, "Login Failed. Please try again, or use forgot password if necessary", Toast.LENGTH_LONG).show();
-                    mLoginFailed = true;
-                }
+    private class FinishLoginTask extends AsyncTask<String, Void, FitBarkSession> {
+        protected FitBarkSession doInBackground(String... tokens) {
+            if (tokens.length != 1) {
+                throw new IllegalArgumentException("FinishLoginTask should only be called with a single token.");
+            }
+
+            FitBarkSession ret = new FitBarkSession(oAuthConfig, tokens[0]);
+            User user = ret.getUserInfo();
+            ArrayList<Dog> dogs = ret.getDogs();
+
+            Log.i(TAG, "User: " + user.getName());
+            Log.i(TAG, "Has " + dogs.size() + " dogs.");
+            for (Dog dog : dogs) {
+                Log.i(TAG, "    " + dog.getName());
+            }
+
+            if (ret != null) {
+                doLoginFinished(ret);
+            }
+
+            return ret;
+        }
+    }
+
+    private class ResumeFitBarkSessionTask extends AsyncTask<String, Void, FitBarkSession> {
+        protected FitBarkSession doInBackground(String... tokens) {
+            if (tokens.length != 1) {
+                throw new IllegalArgumentException("ResumeFitBarkSessionTask should only be called with a single token.");
+            }
+
+            FitBarkSession ret = new FitBarkSession(oAuthConfig, tokens[0], true);
+            User user;
+
+            try {
+                user = ret.getUserInfo();
+            } catch (FitBarkApiException ex) {
+                ret = null;
+                user = null;
+                showToast("Login failed. Please re-enter your FitBark credentials.");
+            }
+
+            if (ret != null) {
+                doLoginFinished(ret);
+            }
+
+            return ret;
+        }
+    }
+
+    private FitBarkLoginWebViewClientImpl webView;
+
+    //-------------------------------------
+    // Login Lifecycle Management
+    //-------------------------------------
+    private void showProgressDialog(String message) {
+        hideProgressDialog();
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        progressDialog.setCancelable(false);
+        progressDialog.setMessage(message);
+        progressDialog.show();
+    }
+
+    private void hideProgressDialog() {
+        if (progressDialog != null) {
+            progressDialog.dismiss();
+            progressDialog = null;
+        }
+    }
+
+    private void showToast(final String message) {
+        runOnUiThread(new Runnable() {
+            public void run() {
+                Toast.makeText(LoginActivity.this, message, Toast.LENGTH_LONG).show();
             }
         });
-        ParseUser currentUser = null;
-        while( currentUser == null && mLoginFailed == false ) {
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-            }
-            currentUser = ParseUser.getCurrentUser();
+    }
+
+    private void doLoginFinished(FitBarkSession session) {
+        // Save their access token
+        preferences.edit().putString(cachedAccessTokenKey, session.getAccessToken()).apply();
+
+        // Move to the main activity
+        hideProgressDialog();
+        startActivity(new Intent(this.getApplicationContext(), MainActivity.class));
+        finish();
+    }
+
+    public void onLoginButtonPressed(View v) {
+        // For testing only, clear all cookies:
+        CookieManager.getInstance().removeAllCookie();
+
+        webView = new FitBarkLoginWebViewClientImpl();
+        webView.setVisibility(View.VISIBLE);
+        setContentView(webView);
+    }
+
+    class LoginTask extends AsyncTask<Void, Void, Void> {
+        ProgressDialog progress;
+        Boolean mLoginFailed;
+
+        public LoginTask() {
+            progress = new ProgressDialog(LoginActivity.this);
         }
 
-        return null;
-    }
-
-    protected void onPostExecute(Void results) {
-        super.onPostExecute(results);
-        if( mLoginFailed == false ) {
-            Intent mainIntent = new Intent(mActivity.getApplicationContext(), MainActivity.class);
-            Log.d("PAYBACK", "In com.hgkdev.haydenkinney.payback.Login_User PostExecute");
-            progress.dismiss();
-            mActivity.startActivity(mainIntent);
-            mActivity.finish();
-        } else {
-            progress.dismiss();
+        protected void onPreExecute() {
+            super.onPreExecute();
+            progress.setCancelable(true);
+            progress.setMessage("Attempting Log In");
+            progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            progress.show();
         }
-    }
-}
 
-class Register_User extends AsyncTask<Void, Void, Void> {
-    Activity mActivity;
-    ParseUser mNewUser;
-    ProgressDialog progress;
-    Boolean mRegisterFailed;
-
-    public Register_User( Activity activity, ParseUser newUser ) {
-        mActivity = activity;
-        mNewUser = newUser;
-        progress = new ProgressDialog( mActivity );
-    }
-
-    protected void onPreExecute() {
-        super.onPreExecute();
-        progress.setCancelable(true);
-        progress.setMessage("Registering New User");
-        progress.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        progress.show();
-    }
-
-    protected Void doInBackground(Void... params) {
-        mRegisterFailed = false;
-        mNewUser.signUpInBackground(new SignUpCallback() {
-            @Override
-            public void done(ParseException e) {
-                if (e == null) {
-                    Log.i("PAYBACK", "User " + mNewUser.getUsername() + " successfully registered");
-                } else {
-                    Toast.makeText(mActivity, "Email already used. Use forgot password if necessary", Toast.LENGTH_LONG).show();
-                    mRegisterFailed = true;
+        protected Void doInBackground(Void... params) {
+            mLoginFailed = false;
+            /*ParseUser.logInInBackground(mEmailAccount, mPassword, new LogInCallback() {
+                public void done(ParseUser user, ParseException e) {
+                    if (user != null) {
+                        Log.i("PAYBACK", "Logged user " + mEmailAccount + " in successfully.");
+                    } else {
+                        Toast.makeText(LoginActivity.this, "Login Failed. Please try again, or use forgot password if necessary", Toast.LENGTH_LONG).show();
+                        mLoginFailed = true;
+                    }
                 }
-            }
-        });
-        ParseUser currentUser = null;
-        while( currentUser == null && mRegisterFailed == false ) {
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-            }
-            currentUser = ParseUser.getCurrentUser();
-        }
-        return null;
-    }
+            });
+            ParseUser currentUser = null;
+            while( currentUser == null && mLoginFailed == false ) {
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                }
+                currentUser = ParseUser.getCurrentUser();
+            }*/
 
-    protected void onPostExecute(Void results) {
-        super.onPostExecute(results);
-        if( mRegisterFailed == false ) {
-            Intent mainIntent = new Intent(mActivity, MainActivity.class);
-            Log.d("PAYBACK", "In com.hgkdev.haydenkinney.payback.Register_User PostExecute");
-            progress.dismiss();
-            mActivity.startActivity(mainIntent);
-            mActivity.finish();
-        } else {
-            progress.dismiss();
+            return null;
         }
 
+        protected void onPostExecute(Void results) {
+            super.onPostExecute(results);
+            /*if( mLoginFailed == false ) {
+                Intent mainIntent = new Intent(mActivity.getApplicationContext(), MainActivity.class);
+                Log.d("PAYBACK", "In com.hgkdev.haydenkinney.payback.Login_User PostExecute");
+                progress.dismiss();
+                mActivity.startActivity(mainIntent);
+                mActivity.finish();
+            } else*/ {
+                progress.dismiss();
+            }
+        }
     }
 }

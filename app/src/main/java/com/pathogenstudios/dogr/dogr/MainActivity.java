@@ -158,7 +158,12 @@ public class MainActivity extends ActionBarActivity
             }
         }
 
-
+        if (bestLocation == null) {
+            sendToast("Couldn't get your location, defaulting to Kansas City.");
+            bestLocation = new Location("null");
+            bestLocation.setLatitude(39.1);
+            bestLocation.setLongitude(-94.58);
+        }
 
         if (showToast)
             sendToast("Location is " + bestLocation.getLatitude() + ", "

@@ -35,9 +35,18 @@ public class FitBarkSession {
 
     private static final String badDataExceptionMessage = "The FitBark servers responded with malformed data.";
 
+    public FitBarkSession(FitBarkOAuthConfig oAuthConfig, String token, boolean tokenIsCachedAccessToken) {
+        if (!tokenIsCachedAccessToken) {
+            // Get the access token from the authorizationToken:
+            oAuthAccessToken = getAccessTokenFromAuthorizationToken(oAuthConfig, token);
+        } else {
+            // Use the token as an access token, we don't do any checks to see whether it is still valid.
+            oAuthAccessToken = token;
+        }
+    }
+
     public FitBarkSession(FitBarkOAuthConfig oAuthConfig, String authorizationToken) {
-        // Get the access token from the authorizationToken:
-        oAuthAccessToken = getAccessTokenFromAuthorizationToken(oAuthConfig, authorizationToken);
+        this(oAuthConfig, authorizationToken, false);
     }
 
     private static String getAccessTokenFromAuthorizationToken(FitBarkOAuthConfig oAuthConfig, String authorizationToken) {
@@ -135,5 +144,9 @@ public class FitBarkSession {
         }
 
         return ret;
+    }
+
+    public String getAccessToken() {
+        return oAuthAccessToken;
     }
 }

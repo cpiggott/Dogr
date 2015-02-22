@@ -7,47 +7,19 @@
     tools:context="com.pathogenstudios.dogr.dogr.LoginActivity">
 
 
-    <EditText
+    <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:inputType="textEmailAddress"
-        android:ems="10"
-        android:id="@+id/emailEditText"
-        android:layout_marginTop="15dp"
-        android:hint="E-mail"
-        android:width="275dp"
-        android:layout_alignParentTop="true"
-        android:layout_alignRight="@+id/forgotPasswordTextView"
-        android:layout_alignEnd="@+id/forgotPasswordTextView" />
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:id="@+id/passwordEditText"
-        android:layout_below="@+id/emailEditText"
+        android:text="Login with FitBark"
+        android:id="@+id/loginButton"
+        android:layout_marginTop="75dp"
+        android:onClick="onLoginButtonPressed"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="12dp"
-        android:inputType="textPassword"
-        android:hint="Password"
         android:width="275dp" />
 
     <Button
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Login"
-        android:id="@+id/loginButton"
-        android:layout_marginTop="25dp"
-        android:layout_below="@+id/passwordEditText"
-        android:layout_alignLeft="@+id/passwordEditText"
-        android:layout_alignStart="@+id/passwordEditText"
-        android:layout_alignRight="@+id/passwordEditText"
-        android:layout_alignEnd="@+id/passwordEditText"
-        android:onClick="loginUser"/>
-
-    <Button
-        android:layout_width="wrap_content"
-        android:enabled="true"
+        android:enabled="false"
         android:layout_height="wrap_content"
         android:text="Register"
         android:id="@+id/registerButton"
@@ -59,15 +31,4 @@
         android:layout_alignEnd="@+id/loginButton"
         android:onClick="registerUser"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Forgot Password?"
-        android:id="@+id/forgotPasswordTextView"
-        android:textStyle="italic"
-        android:layout_marginTop="8dp"
-        android:layout_below="@+id/registerButton"
-        android:layout_alignRight="@+id/registerButton"
-        android:layout_alignEnd="@+id/registerButton"
-        android:onClick="forgotPassword"/>
 </RelativeLayout>
