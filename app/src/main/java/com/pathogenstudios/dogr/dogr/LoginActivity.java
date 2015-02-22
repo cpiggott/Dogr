@@ -176,7 +176,7 @@ class Change_Password extends AsyncTask<Void, Void, Void> {
                     @Override
                     public void done(ParseException e) {
                         if (e == null) {
-                            Log.i("PAYBACK", "Sent forgot password reset email to " + mEmailAccount );
+                            Log.i("DOGR", "Sent forgot password reset email to " + mEmailAccount );
                         } else {
                             Toast.makeText(mActivity, "Email address does not exist, please try again or register.", Toast.LENGTH_LONG).show();
                         }
@@ -222,7 +222,7 @@ class Login_User extends AsyncTask<Void, Void, Void> {
         ParseUser.logInInBackground(mEmailAccount, mPassword, new LogInCallback() {
             public void done(ParseUser user, ParseException e) {
                 if (user != null) {
-                    Log.i("PAYBACK", "Logged user " + mEmailAccount + " in successfully.");
+                    Log.i("DOGR", "Logged user " + mEmailAccount + " in successfully.");
                 } else {
                     Toast.makeText(mActivity, "Login Failed. Please try again, or use forgot password if necessary", Toast.LENGTH_LONG).show();
                     mLoginFailed = true;
@@ -245,7 +245,6 @@ class Login_User extends AsyncTask<Void, Void, Void> {
         super.onPostExecute(results);
         if( mLoginFailed == false ) {
             Intent mainIntent = new Intent(mActivity.getApplicationContext(), MainActivity.class);
-            Log.d("PAYBACK", "In com.hgkdev.haydenkinney.payback.Login_User PostExecute");
             progress.dismiss();
             mActivity.startActivity(mainIntent);
             mActivity.finish();
@@ -281,7 +280,7 @@ class Register_User extends AsyncTask<Void, Void, Void> {
             @Override
             public void done(ParseException e) {
                 if (e == null) {
-                    Log.i("PAYBACK", "User " + mNewUser.getUsername() + " successfully registered");
+                    Log.i("DOGR", "User " + mNewUser.getUsername() + " successfully registered");
                 } else {
                     Toast.makeText(mActivity, "Email already used. Use forgot password if necessary", Toast.LENGTH_LONG).show();
                     mRegisterFailed = true;
@@ -303,7 +302,6 @@ class Register_User extends AsyncTask<Void, Void, Void> {
         super.onPostExecute(results);
         if( mRegisterFailed == false ) {
             Intent mainIntent = new Intent(mActivity, MainActivity.class);
-            Log.d("PAYBACK", "In com.hgkdev.haydenkinney.payback.Register_User PostExecute");
             progress.dismiss();
             mActivity.startActivity(mainIntent);
             mActivity.finish();
