@@ -58,7 +58,6 @@ public class MatchesFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_matched_users, container, false);
 //        userImage = (ImageButton) rootView.findViewById(R.id.imageButtonUpdateUser);
-
         list = (ListView)rootView.findViewById(R.id.listViewMatches);
 
         LoadMatchesAsync lma = new LoadMatchesAsync(getActivity(), list, this);
@@ -67,8 +66,8 @@ public class MatchesFragment extends Fragment {
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 ArrayList<String> builderOptions = new ArrayList<String>();
-                builderOptions.add("Revisit their profile!");
-                builderOptions.add("Send them an email!");
+                builderOptions.add("Revisit their profile");
+                builderOptions.add("Send them an email");
 
                 CharSequence[] cM = new CharSequence[builderOptions.size()];
                 cM = builderOptions.toArray(cM);
