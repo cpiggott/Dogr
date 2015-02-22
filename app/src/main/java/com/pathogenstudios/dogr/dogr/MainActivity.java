@@ -1,22 +1,22 @@
 package com.pathogenstudios.dogr.dogr;
 
-import android.app.Activity;
 import android.content.Intent;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
 import com.parse.ParseUser;
+
+import java.util.List;
 
 
 public class MainActivity extends ActionBarActivity
@@ -32,6 +32,8 @@ public class MainActivity extends ActionBarActivity
      */
     private CharSequence mTitle;
 
+    private ParseUser currentUser;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,8 +48,20 @@ public class MainActivity extends ActionBarActivity
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
-
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();  // Always call the superclass method first
+        saveLocation();
+    }
+
+    @Override
+    protected void onStart(){
+        super.onStart();
+        saveLocation();
+    }
+
 
     @Override
     public void onNavigationDrawerItemSelected(int position) {
@@ -60,7 +74,7 @@ public class MainActivity extends ActionBarActivity
                             UpdateUserFragment.newInstance(position + 1)).commit();
         } else {
             fragmentManager.beginTransaction()
-                    .replace(R.id.container, PlaceholderFragment.newInstance(position + 1))
+                    .replace(R.id.container, MainFragment.newInstance(position + 1))
                     .commit();
         }
     }
@@ -120,7 +134,7 @@ public class MainActivity extends ActionBarActivity
     }
 
     private void logoutCurrentUser() {
-        ParseUser currentUser = ParseUser.getCurrentUser();
+        currentUser = ParseUser.getCurrentUser();
         Intent intent = new Intent(this, LoginActivity.class);
         if (currentUser != null) {
             currentUser.logOut();
@@ -131,44 +145,44 @@ public class MainActivity extends ActionBarActivity
         finish();
     }
 
-    /**
-     * A placeholder fragment containing a simple view.
-     */
-    public static class PlaceholderFragment extends Fragment {
-        /**
-         * The fragment argument representing the section number for this
-         * fragment.
-         */
-        private static final String ARG_SECTION_NUMBER = "section_number";
+    //Obtains the current location from the phone
+    private Location obtainLocation(Boolean showToast) {
 
-        /**
-         * Returns a new instance of this fragment for the given section
-         * number.
-         */
-        public static PlaceholderFragment newInstance(int sectionNumber) {
-            PlaceholderFragment fragment = new PlaceholderFragment();
-            Bundle args = new Bundle();
-            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
-            fragment.setArguments(args);
-            return fragment;
+        LocationManager mLocationManager = (LocationManager)getApplicationContext().getSystemService(LOCATION_SERVICE);
+        List<String> providers = mLocationManager.getProviders(true);
+        Location bestLocation = null;
+        for (String provider : providers) {
+            Location l = mLocationManager.getLastKnownLocation(provider);
+            if (l == null) {
+                continue;
+            }
+            if (bestLocation == null || l.getAccuracy() < bestLocation.getAccuracy()) {
+                // Found best last known location: %s", l);
+                bestLocation = l;
+            }
         }
 
-        public PlaceholderFragment() {
-        }
 
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            return rootView;
-        }
 
-        @Override
-        public void onAttach(Activity activity) {
-            super.onAttach(activity);
-            ((MainActivity) activity).onSectionAttached(
-                    getArguments().getInt(ARG_SECTION_NUMBER));
-        }
+        if (showToast)
+            sendToast("Location is " + bestLocation.getLatitude() + ", "
+                    + bestLocation.getLongitude() + ".");
+        return bestLocation;
+    }
+
+    private void sendToast(String message) {
+        CharSequence text = (CharSequence) message;
+        Toast toast = Toast.makeText(this, text, Toast.LENGTH_LONG);
+        toast.show();
+    }
+
+    //Saves the location of the current user to Parse.
+    private void saveLocation(){
+        currentUser = ParseUser.getCurrentUser();
+        Location currentLocation = obtainLocation(false);
+        ParseGeoPoint parseLocation = new ParseGeoPoint(currentLocation.getLatitude(), currentLocation.getLongitude());
+        currentUser.put("lastKnownLocation", parseLocation);
+        currentUser.saveInBackground();
     }
 
 }
