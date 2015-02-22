@@ -1,4 +1,4 @@
-package com.pathogenstudios.dogr.dogr;
+package com.andtinder.model;
 
 /**
  * Created by Chris on 2/22/2015.
