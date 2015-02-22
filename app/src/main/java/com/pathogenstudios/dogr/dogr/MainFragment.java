@@ -12,6 +12,8 @@ import com.andtinder.model.CardModel;
 import com.andtinder.model.Orientations;
 import com.andtinder.view.CardContainer;
 import com.andtinder.view.SimpleCardStackAdapter;
+import com.andtinder.model.CardData;
+import com.andtinder.model.DogCardData;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;
@@ -94,6 +96,8 @@ public class MainFragment extends Fragment {
                         }
                         cardData.add(new CardData(tempUser.getObjectId().toString(), tempUser.getString("username"), tempUser.getString("userBio"), Integer.toString(dogData.size()), dogData ));
                         dogData = new ArrayList<DogCardData>();
+
+                        SwiperNoSwiping();
                     }
 
                 } else {
@@ -108,32 +112,41 @@ public class MainFragment extends Fragment {
 
         mCardContainer = (CardContainer) rootView.findViewById(R.id.cardView);
         mCardContainer.setOrientation(Orientations.Orientation.Ordered);
-        RetrieveData();
-
-
-        CardModel card = new CardModel("Chris", "dddDayum", getResources().getDrawable(R.drawable.logo));
-
-        card.setOnCardDimissedListener(new CardModel.OnCardDimissedListener(){
-            @Override
-            public void onLike(){
-                Log.i("Swipeable Cards","I like the card");
-            }
-            public void onDislike(){
-                Log.i("Swipeable Cards","I dislike the card");
-            }
-
-        });
-
-        card.setOnClickListener(new CardModel.OnClickListener() {
-            @Override
-            public void OnClickListener() {
-                Log.i("Swipeable Cards","I am pressing the card");
-            }
-        });
-
         SimpleCardStackAdapter adapter = new SimpleCardStackAdapter(getActivity());
-        adapter.add(card);
+
+        for(CardData datD : cardData){
+            final CardModel card = new CardModel(datD.UserName,datD.UserBio, getResources().getDrawable(R.drawable.logo),datD);
+            card.setOnCardDimissedListener(new CardModel.OnCardDimissedListener(){
+                @Override
+                public void onLike(){
+                    Log.i("Swipeable Cards","I like the card " + card.getTitle());
+                }
+                public void onDislike(){
+                    Log.i("Swipeable Cards","I dislike the card" + card.getTitle());
+                }
+            });
+
+            card.setOnClickListener(new CardModel.OnClickListener() {
+                @Override
+                public void OnClickListener() {
+                    Log.i("Swipeable Cards","I am pressing the card"  + card.getTitle());
+                }
+            });
+
+            adapter.add(card);
+
+        }
         mCardContainer.setAdapter(adapter);
+
+//        CardModel card = new CardModel("Chris", "dddDayum", getResources().getDrawable(R.drawable.logo));
+
+
+
+
+
+
+
+
 
     }
 
