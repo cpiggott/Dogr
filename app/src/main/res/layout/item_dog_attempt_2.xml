@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:gravity="center_vertical" >
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="100dp"
+        android:gravity="top">
+
+        <TextView
+            android:id="@+id/txtViewDogName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Shirly"
+            android:textSize="30sp"
+            android:paddingLeft="10dp"
+            android:layout_centerVertical="true"
+            android:layout_alignParentStart="true" />
+
+        <TextView
+            android:id="@+id/txtViewBreed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:text="Beagle"
+            android:paddingTop="5dp"
+            android:gravity="right"
+            android:paddingLeft="10dp"
+            android:layout_below="@+id/txtViewWeight"
+            android:layout_alignParentStart="true" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="Weight:"
+            android:id="@+id/txtViewWeight"
+            android:paddingRight="40dp"
+            android:layout_below="@+id/txtViewDogName"
+            android:layout_alignEnd="@+id/txtViewDailyGoal" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="Fitness Goal:"
+            android:id="@+id/txtViewDailyGoal"
+            android:paddingRight="40dp"
+            android:layout_alignTop="@+id/txtViewDogName"
+            android:layout_alignParentEnd="true" />
+
+        <TextView
+            android:id="@+id/txtViewGender"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:text="Male"
+            android:paddingTop="10dp"
+            android:paddingLeft="30dp"
+            android:layout_below="@+id/txtViewWeight"
+            android:layout_alignStart="@+id/txtViewWeight" />
+    </LinearLayout>
+
+</LinearLayout>

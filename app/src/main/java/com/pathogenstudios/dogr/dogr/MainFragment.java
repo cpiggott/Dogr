@@ -3,10 +3,9 @@ package com.pathogenstudios.dogr.dogr;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.util.Log;
-import android.view.GestureDetector;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -126,7 +125,7 @@ public class MainFragment extends Fragment {
         mCardContainer.setOrientation(Orientations.Orientation.Ordered);
         SimpleCardStackAdapter adapter = new SimpleCardStackAdapter(getActivity());
 
-        for(CardData datD : cardData){
+        for(final CardData datD : cardData){
             final CardModel card = new CardModel(datD.UserName,datD.UserBio, getResources().getDrawable(R.drawable.logo),datD);
             card.setOnCardDimissedListener(new CardModel.OnCardDimissedListener(){
                 @Override
@@ -226,7 +225,11 @@ public class MainFragment extends Fragment {
             card.setButtonClick(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Log.i("Random","Please fucking work...");
+                    FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+                    fragmentManager
+                                .beginTransaction()
+                                .replace(R.id.container,
+                                        DogFragment.newInstance(6, datD)).commit();
                 }
             });
 
