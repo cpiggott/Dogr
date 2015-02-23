@@ -17,7 +17,7 @@ public class Dog {
     public Dog(String name, String breed, String gender, String dailyGoal, String weight) {
         this.name = name;
         this.breed = breed;
-        this.gender = breed;
+        this.gender = gender;
         this.dailyGoal = dailyGoal;
         this.weight = weight;
     }

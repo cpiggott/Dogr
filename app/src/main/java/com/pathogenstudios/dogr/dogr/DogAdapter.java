@@ -2,7 +2,6 @@ package com.pathogenstudios.dogr.dogr;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,7 +13,7 @@ public class DogAdapter extends ArrayAdapter<Dog> {
     Context context;
     int layoutResourceId;
     Dog[] data;
-    Bitmap bmp;
+//    Bitmap bmp;
 
     public DogAdapter(Context context, int layoutResourceId, Dog[] data) {
 
@@ -45,6 +44,8 @@ public class DogAdapter extends ArrayAdapter<Dog> {
             holder.txtGender = (TextView) row.findViewById(R.id.txtViewGender);
             holder.txtBreed = (TextView) row.findViewById(R.id.txtViewBreed);
             holder.txtWeight = (TextView) row.findViewById(R.id.txtViewWeight);
+//            holder.imgView = (ImageView)row.findViewById(R.id.profilePic);
+
             row.setTag(holder);
         } else {
             holder = (DogHolder) row.getTag();
@@ -59,16 +60,19 @@ public class DogAdapter extends ArrayAdapter<Dog> {
         String dailyGoal = match.getDailyGoal();
         String weight = match.getWeight();
 
+
+//        holder.imgView.setImageResource(R.drawable.ic_action_person);
         holder.txtName.setText(name);
         holder.txtGender.setText(gender);
         holder.txtBreed.setText(breed);
-        holder.txtDailyGoal.setText(dailyGoal);
-        holder.txtWeight.setText(weight);
+        holder.txtDailyGoal.setText("Daily Activity: " + dailyGoal);
+        holder.txtWeight.setText("Weight: " + weight);
 
         return row;
     }
 
     static class DogHolder {
+//        ImageView imgView;
         TextView txtName;
         TextView txtBreed;
         TextView txtGender;
